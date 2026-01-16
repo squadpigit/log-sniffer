@@ -11,7 +11,7 @@ from seo_log_analyzer import SEOLogAnalyzer
 
 # Configuração da página
 st.set_page_config(
-    page_title="SEO Log Analyzer",
+    page_title="Conversion Log Analyzer",
     page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -49,7 +49,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header
-st.markdown('<h1 class="main-header">🔍 Conversion Log Analyzer</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header"> Conversion Log Analyzer</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Análise  de logs de acesso com foco em SEO.</p>', unsafe_allow_html=True)
 
 # Sidebar com informações
@@ -375,6 +375,6 @@ st.divider()
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 2rem;'>
     <p>🚀 <strong>Conversion Log Sniffer</strong></p>
-    <p>Squad Pi</p>
+    <p>Erros, Bugs, ou sugestões, falar com o Paulo Ferreira</p>
 </div>
 """, unsafe_allow_html=True)
