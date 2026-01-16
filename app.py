@@ -49,12 +49,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header
-st.markdown('<h1 class="main-header">🔍 SEO Log Analyzer</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Análise avançada de logs de acesso com foco em SEO e identificação de bots</p>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🔍 Conversion Log Analyzer</h1>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Análise  de logs de acesso com foco em SEO.</p>', unsafe_allow_html=True)
 
 # Sidebar com informações
 with st.sidebar:
-    st.header("📊 Sobre a Ferramenta")
+    st.header("📊 Sobre")
     st.markdown("""
     Esta ferramenta analisa arquivos de log de servidores web e gera relatórios detalhados sobre:
     
@@ -83,7 +83,7 @@ with st.sidebar:
     - Nginx Access Log
     
     **⚠️ Arquivos Grandes:**
-    A ferramenta suporta arquivos de qualquer tamanho. 
+    A ferramenta suporta arquivos grandes, mas não testamos o limite. 
     O processamento pode levar alguns minutos para logs com milhões de linhas.
     """)
 
@@ -374,7 +374,7 @@ if st.session_state.get('analysis_complete', False):
 st.divider()
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 2rem;'>
-    <p>🚀 <strong>SEO Log Analyzer</strong> - Análise profissional de logs para SEO</p>
-    <p>Desenvolvido para análise de Googlebot, LLM Bots (GPTBot, ClaudeBot) e otimização SEO</p>
+    <p>🚀 <strong>Conversion Log Sniffer</strong></p>
+    <p>Squad Pi</p>
 </div>
 """, unsafe_allow_html=True)
