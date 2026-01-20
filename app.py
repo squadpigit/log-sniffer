@@ -375,6 +375,6 @@ st.divider()
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 2rem;'>
     <p>🚀 <strong>Conversion Log Sniffer</strong></p>
-    <p>Erros, Bugs, ou sugestões, falar com o Paulo Ferreira</p>
+    <p>Erros, Bugs ou sugestões, falar com o Paulo Ferreira.</p>
 </div>
 """, unsafe_allow_html=True)
