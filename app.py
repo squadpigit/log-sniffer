@@ -11,7 +11,7 @@ from seo_log_analyzer import SEOLogAnalyzer
 
 # Configuração da página
 st.set_page_config(
-    page_title="Conversion Log Analyzer",
+    page_title="SEO Log Analyzer",
     page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -49,12 +49,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header
-st.markdown('<h1 class="main-header"> Conversion Log Analyzer</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Análise  de logs de acesso com foco em SEO.</p>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">Conversion Log Analyzer</h1>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Análise avançada de logs de acesso com foco em SEO e identificação de bots</p>', unsafe_allow_html=True)
 
 # Sidebar com informações
 with st.sidebar:
-    st.header("📊 Sobre")
+    st.header("📊 Sobre a Ferramenta")
     st.markdown("""
     Esta ferramenta analisa arquivos de log de servidores web e gera relatórios detalhados sobre:
     
@@ -83,44 +83,62 @@ with st.sidebar:
     - Nginx Access Log
     
     **⚠️ Arquivos Grandes:**
-    A ferramenta suporta arquivos grandes, mas não testamos o limite. 
+    A ferramenta suporta arquivos de qualquer tamanho. 
     O processamento pode levar alguns minutos para logs com milhões de linhas.
     """)
 
 # Upload do arquivo
-st.header("📁 Upload do Arquivo de Log")
+st.header("📁 Upload de Arquivos de Log")
 
-uploaded_file = st.file_uploader(
-    "Selecione seu arquivo de log (acess.log, access.log, etc.)",
-    type=['log', 'txt'],
-    help="Arquivos grandes são suportados. O processamento mostrará progresso em tempo real."
+uploaded_files = st.file_uploader(
+    "Selecione um ou múltiplos arquivos de log (access.log, access.log.1, access.log.2, etc.)",
+    type=None,  # Aceita qualquer tipo de arquivo
+    accept_multiple_files=True,
+    help="📝 Aceita logs rotacionados (.1, .2, .3, etc). Você pode selecionar múltiplos arquivos de uma vez. O processamento mostrará progresso em tempo real."
 )
 
-if uploaded_file is not None:
-    # Informações do arquivo
-    file_size_mb = uploaded_file.size / (1024 * 1024)
-    st.info(f"📊 Arquivo carregado: **{uploaded_file.name}** ({file_size_mb:.2f} MB)")
+if uploaded_files:
+    # Informações dos arquivos
+    total_size_mb = sum(f.size for f in uploaded_files) / (1024 * 1024)
+    num_files = len(uploaded_files)
+    
+    if num_files == 1:
+        st.info(f"📊 Arquivo carregado: **{uploaded_files[0].name}** ({total_size_mb:.2f} MB)")
+    else:
+        st.info(f"📊 **{num_files} arquivos** carregados ({total_size_mb:.2f} MB total)")
+        with st.expander("Ver lista de arquivos"):
+            for f in uploaded_files:
+                st.text(f"• {f.name} ({f.size / (1024*1024):.2f} MB)")
     
     # Botão para iniciar análise
     if st.button("🚀 Iniciar Análise", type="primary", use_container_width=True):
         try:
-            # Salva arquivo temporário
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.log') as tmp_file:
-                tmp_file.write(uploaded_file.getvalue())
+            # Combina múltiplos arquivos em um temporário
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.log', mode='w', encoding='utf-8') as tmp_file:
                 tmp_file_path = tmp_file.name
+                
+                # Escreve conteúdo de todos os arquivos
+                for i, uploaded_file in enumerate(uploaded_files):
+                    content = uploaded_file.getvalue().decode('utf-8', errors='ignore')
+                    tmp_file.write(content)
+                    if i < len(uploaded_files) - 1:
+                        tmp_file.write('\n')  # Adiciona quebra de linha entre arquivos
             
             # Container para progresso
             progress_container = st.container()
             
             with progress_container:
-                st.subheader("⚙️ Processando...")
+                if num_files == 1:
+                    st.subheader(f"⚙️ Processando {uploaded_files[0].name}...")
+                else:
+                    st.subheader(f"⚙️ Processando {num_files} arquivos...")
                 
                 # Barra de progresso
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
                 # Analisa o arquivo
-                status_text.text("Iniciando análise do arquivo...")
+                status_text.text("Iniciando análise dos logs...")
                 progress_bar.progress(10)
                 
                 analyzer = SEOLogAnalyzer(tmp_file_path)
@@ -178,7 +196,10 @@ if uploaded_file is not None:
             st.session_state['csv_llm'] = csv_llm
             st.session_state['report'] = report
             
-            st.success("🎉 Análise completa! Role para baixo para ver os resultados.")
+            if num_files == 1:
+                st.success(f"🎉 Análise de **{uploaded_files[0].name}** completa! Role para baixo para ver os resultados.")
+            else:
+                st.success(f"🎉 Análise de **{num_files} arquivos** completa! Role para baixo para ver os resultados.")
             
         except Exception as e:
             st.error(f"❌ Erro ao processar arquivo: {str(e)}")
@@ -374,7 +395,7 @@ if st.session_state.get('analysis_complete', False):
 st.divider()
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 2rem;'>
-    <p>🚀 <strong>Conversion Log Sniffer</strong></p>
-    <p>Erros, Bugs ou sugestões, falar com o Paulo Ferreira.</p>
+    <p>🚀 <strong>SEO Log Analyzer</strong> - Análise profissional de logs para SEO</p>
+    <p>Desenvolvido para análise de Googlebot, LLM Bots (GPTBot, ClaudeBot)</p>
 </div>
 """, unsafe_allow_html=True)
