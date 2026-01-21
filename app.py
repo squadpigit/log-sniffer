@@ -49,7 +49,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header
-st.markdown('<h1 class="main-header">Conversion Log Analyzer</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🔍 SEO Log Analyzer</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Análise avançada de logs de acesso com foco em SEO e identificação de bots</p>', unsafe_allow_html=True)
 
 # Sidebar com informações
@@ -83,32 +83,39 @@ with st.sidebar:
     - Nginx Access Log
     
     **⚠️ Arquivos Grandes:**
-    A ferramenta suporta arquivos de qualquer tamanho. 
-    O processamento pode levar alguns minutos para logs com milhões de linhas.
+    Suporta até 2GB total. 
+    Processa logs rotacionados (.1, .2, .3, etc).
     """)
 
 # Upload do arquivo
 st.header("📁 Upload de Arquivos de Log")
 
-uploaded_file = st.file_uploader(
-    "Selecione seu arquivo de log (acess.log, access.log, etc.)",
-    type=['log', 'txt'],
-    help="Arquivos grandes são suportados. O processamento mostrará progresso em tempo real."
+uploaded_files = st.file_uploader(
+    "Selecione um ou múltiplos arquivos de log (access.log, access.log.1, access.log.2, etc.)",
+    accept_multiple_files=True,
+    help="📝 Aceita logs rotacionados (.1, .2, .3, etc). Suporta até 2GB total. Processamento otimizado para múltiplos arquivos grandes."
 )
 
-if uploaded_file is not None:
-    # Informações do arquivo
-    file_size_mb = uploaded_file.size / (1024 * 1024)
-    st.info(f"📊 Arquivo carregado: **{uploaded_file.name}** ({file_size_mb:.2f} MB)")
+if uploaded_files:
+    # Informações dos arquivos
+    total_size_mb = sum(f.size for f in uploaded_files) / (1024 * 1024)
+    num_files = len(uploaded_files)
+    
+    if num_files == 1:
+        st.info(f"📊 Arquivo carregado: **{uploaded_files[0].name}** ({total_size_mb:.2f} MB)")
+    else:
+        st.info(f"📊 **{num_files} arquivos** carregados ({total_size_mb:.2f} MB total)")
+        with st.expander("Ver lista de arquivos"):
+            for f in uploaded_files:
+                st.text(f"• {f.name} ({f.size / (1024*1024):.2f} MB)")
+    
+    # Aviso se arquivos forem muito grandes
+    if total_size_mb > 1500:
+        st.warning("⚠️ Arquivos muito grandes (>1.5GB). O processamento pode levar vários minutos. Para volumes maiores, considere usar a versão CLI.")
     
     # Botão para iniciar análise
     if st.button("🚀 Iniciar Análise", type="primary", use_container_width=True):
         try:
-            # Salva arquivo temporário
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.log') as tmp_file:
-                tmp_file.write(uploaded_file.getvalue())
-                tmp_file_path = tmp_file.name
-            
             # Container para progresso
             progress_container = st.container()
             
@@ -121,10 +128,36 @@ if uploaded_file is not None:
                 # Barra de progresso geral
                 progress_bar = st.progress(0)
                 status_text = st.empty()
+                file_progress = st.empty()
                 
-                # Analisa o arquivo
-                status_text.text("Iniciando análise do arquivo...")
-                progress_bar.progress(10)
+                # Cria arquivo temporário consolidado processando um por um
+                status_text.text("📦 Preparando arquivos...")
+                progress_bar.progress(5)
+                
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.log', mode='w', encoding='utf-8') as tmp_file:
+                    tmp_file_path = tmp_file.name
+                    
+                    # Processa cada arquivo
+                    for idx, uploaded_file in enumerate(uploaded_files):
+                        file_progress.text(f"📄 Processando {idx+1}/{num_files}: {uploaded_file.name}")
+                        
+                        # Progress por arquivo (5% a 25% do total)
+                        file_prog = 5 + int((idx / num_files) * 20)
+                        progress_bar.progress(file_prog)
+                        
+                        # Lê e escreve em chunks para economizar memória
+                        content = uploaded_file.getvalue().decode('utf-8', errors='ignore')
+                        tmp_file.write(content)
+                        
+                        if idx < len(uploaded_files) - 1:
+                            tmp_file.write('\n')
+                        
+                        # Libera memória
+                        del content
+                
+                file_progress.empty()
+                status_text.text("✅ Arquivos preparados. Iniciando análise...")
+                progress_bar.progress(30)
                 
                 # Analisa o log consolidado
                 analyzer = SEOLogAnalyzer(tmp_file_path)
@@ -382,6 +415,6 @@ st.divider()
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 2rem;'>
     <p>🚀 <strong>SEO Log Analyzer</strong> - Análise profissional de logs para SEO</p>
-    <p>Desenvolvido para análise de Googlebot, LLM Bots (GPTBot, ClaudeBot)</p>
+    <p>Desenvolvido para análise de Googlebot, LLM Bots (GPTBot, ClaudeBot) e otimização SEO</p>
 </div>
 """, unsafe_allow_html=True)
