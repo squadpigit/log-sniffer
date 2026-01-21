@@ -90,39 +90,24 @@ with st.sidebar:
 # Upload do arquivo
 st.header("📁 Upload de Arquivos de Log")
 
-uploaded_files = st.file_uploader(
-    "Selecione um ou múltiplos arquivos de log (access.log, access.log.1, access.log.2, etc.)",
-    type=None,  # Aceita qualquer tipo de arquivo
-    accept_multiple_files=True,
-    help="📝 Aceita logs rotacionados (.1, .2, .3, etc). Você pode selecionar múltiplos arquivos de uma vez. O processamento mostrará progresso em tempo real."
+uploaded_file = st.file_uploader(
+    "Selecione seu arquivo de log (acess.log, access.log, etc.)",
+    type=['log', 'txt'],
+    help="Arquivos grandes são suportados. O processamento mostrará progresso em tempo real."
 )
 
-if uploaded_files:
-    # Informações dos arquivos
-    total_size_mb = sum(f.size for f in uploaded_files) / (1024 * 1024)
-    num_files = len(uploaded_files)
-    
-    if num_files == 1:
-        st.info(f"📊 Arquivo carregado: **{uploaded_files[0].name}** ({total_size_mb:.2f} MB)")
-    else:
-        st.info(f"📊 **{num_files} arquivos** carregados ({total_size_mb:.2f} MB total)")
-        with st.expander("Ver lista de arquivos"):
-            for f in uploaded_files:
-                st.text(f"• {f.name} ({f.size / (1024*1024):.2f} MB)")
+if uploaded_file is not None:
+    # Informações do arquivo
+    file_size_mb = uploaded_file.size / (1024 * 1024)
+    st.info(f"📊 Arquivo carregado: **{uploaded_file.name}** ({file_size_mb:.2f} MB)")
     
     # Botão para iniciar análise
     if st.button("🚀 Iniciar Análise", type="primary", use_container_width=True):
         try:
-            # Combina múltiplos arquivos em um temporário
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.log', mode='w', encoding='utf-8') as tmp_file:
+            # Salva arquivo temporário
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.log') as tmp_file:
+                tmp_file.write(uploaded_file.getvalue())
                 tmp_file_path = tmp_file.name
-                
-                # Escreve conteúdo de todos os arquivos
-                for i, uploaded_file in enumerate(uploaded_files):
-                    content = uploaded_file.getvalue().decode('utf-8', errors='ignore')
-                    tmp_file.write(content)
-                    if i < len(uploaded_files) - 1:
-                        tmp_file.write('\n')  # Adiciona quebra de linha entre arquivos
             
             # Container para progresso
             progress_container = st.container()
@@ -133,22 +118,23 @@ if uploaded_files:
                 else:
                     st.subheader(f"⚙️ Processando {num_files} arquivos...")
                 
-                # Barra de progresso
+                # Barra de progresso geral
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
                 # Analisa o arquivo
-                status_text.text("Iniciando análise dos logs...")
+                status_text.text("Iniciando análise do arquivo...")
                 progress_bar.progress(10)
                 
+                # Analisa o log consolidado
                 analyzer = SEOLogAnalyzer(tmp_file_path)
                 
-                status_text.text("Parseando linhas do log...")
-                progress_bar.progress(30)
+                status_text.text("🔍 Parseando linhas do log...")
+                progress_bar.progress(40)
                 
                 analyzer.analyze()
                 
-                status_text.text("Gerando relatórios...")
+                status_text.text("📊 Gerando relatórios...")
                 progress_bar.progress(60)
                 
                 # Gera relatório texto
